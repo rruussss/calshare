@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}Create Calendar{% endblock %}
+
+{% block content %}
+<section class="create-page">
+    <div class="create-header">
+        <h1>Create Shareable Calendar</h1>
+        <p>Upload any file with schedule information, paste text, or enter events manually.</p>
+    </div>
+
+    <div class="create-container">
+        <!-- Calendar Info Section -->
+        <div class="form-section">
+            <h2 class="section-label">Calendar Details</h2>
+            <div class="form-group">
+                <label for="calendar-name">Calendar Name *</label>
+                <input type="text" id="calendar-name" placeholder="e.g., Soccer Team Fall 2024 Schedule" required>
+            </div>
+            <div class="form-group">
+                <label for="calendar-description">Description</label>
+                <textarea id="calendar-description" placeholder="Optional description" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="custom-slug">Custom URL (optional)</label>
+                <div class="slug-input">
+                    <span class="slug-prefix">/c/</span>
+                    <input type="text" id="custom-slug" placeholder="my-team-schedule">
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="form-section">
+            <h2 class="section-label">Upload Schedule</h2>
+            <p class="section-desc">Upload any file — our AI will extract the events automatically.</p>
+            
+            <div class="upload-area" id="upload-area">
+                <div class="upload-content">
+                    <div class="upload-icon">📁</div>
+                    <p class="upload-text">Drag & drop any file here</p>
+                    <p class="upload-subtext">
+                        Images (PNG, JPG) • PDFs • Excel • Word • Text • ICS
+                    </p>
+                </div>
+                <input type="file" id="file-input" accept="*/*" hidden>
+            </div>
+            
+            <div class="processing-status" id="processing-status" style="display: none;">
+                <div class="spinner"></div>
+                <span id="status-text">Processing with AI...</span>
+            </div>
+        </div>
+
+        <!-- Paste Text Section -->
+        <div class="form-section">
+            <h2 class="section-label">Or Paste Schedule Text</h2>
+            <div class="form-group">
+                <textarea id="paste-text" rows="6" placeholder="Paste your schedule here...
+
+Example:
+Dec 1, 9am - Practice at Main Field
+Dec 7, 2pm - Game vs Eagles at Home Stadium
+Dec 8, 9am - Practice
+Dec 14, 3pm - Game vs Hawks (Away)"></textarea>
+            </div>
+            <button type="button" id="parse-text-btn" class="btn btn-secondary">
+                <span>🤖</span> Extract Events with AI
+            </button>
+        </div>
+
+        <!-- Manual Entry Section -->
+        <div class="form-section">
+            <div class="section-header">
+                <h2 class="section-label">Or Add Events Manually</h2>
+            </div>
+            <div id="events-container"></div>
+            <button type="button" id="add-event-btn" class="btn btn-secondary">
+                <span>+</span> Add Event
+            </button>
+        </div>
+
+        <!-- Events Preview -->
+        <div class="form-section events-preview" id="events-preview" style="display: none;">
+            <div class="section-header">
+                <h2 class="section-label">
+                    Extracted Events 
+                    <span class="event-count" id="event-count">0</span>
+                </h2>
+                <button type="button" id="clear-events-btn" class="btn btn-small btn-danger">Clear All</button>
+            </div>
+            <p class="section-desc">Review and edit the extracted events. Click on any field to modify.</p>
+            <div class="events-list" id="events-list"></div>
+        </div>
+
+        <!-- Create Button -->
+        <div class="form-actions">
+            <button type="button" id="create-btn" class="btn btn-primary btn-large" disabled>
+                Create Shareable Calendar
+            </button>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal" id="success-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🎉 Calendar Created!</h2>
+            </div>
+            <div class="modal-body">
+                <p>Your shareable calendar is ready. Share this link:</p>
+                
+                <div class="share-url-container">
+                    <input type="text" id="share-url" readonly>
+                    <button type="button" id="copy-url-btn" class="btn btn-secondary">Copy</button>
+                </div>
+                
+                <div class="qr-container">
+                    <h3>QR Code</h3>
+                    <div id="qr-code-display"></div>
+                    <small>Scan to open on mobile</small>
+                </div>
+                
+                <div class="modal-actions">
+                    <a href="#" id="view-calendar-btn" class="btn btn-primary">View Calendar Page</a>
+                    <button type="button" id="create-another-btn" class="btn btn-secondary">Create Another</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Event Edit Template -->
+<template id="event-template">
+    <div class="event-card" data-event-index="">
+        <div class="event-card-header">
+            <span class="event-number">Event #1</span>
+            <button type="button" class="remove-event-btn" title="Remove">×</button>
+        </div>
+        <div class="event-card-body">
+            <div class="form-row">
+                <div class="form-group flex-2">
+                    <label>Title *</label>
+                    <input type="text" class="event-title" placeholder="Event title" required>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select class="event-category">
+                        <option value="general">General</option>
+                        <option value="practice">Practice</option>
+                        <option value="game">Game</option>
+                        <option value="meeting">Meeting</option>
+                        <option value="event">Event</option>
+                        <option value="deadline">Deadline</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Start *</label>
+                    <input type="datetime-local" class="event-start" required>
+                </div>
+                <div class="form-group">
+                    <label>End *</label>
+                    <input type="datetime-local" class="event-end" required>
+                </div>
+                <div class="form-group checkbox-group">
+                    <label><input type="checkbox" class="event-allday"> All day</label>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group flex-2">
+                    <label>Location</label>
+                    <input type="text" class="event-location" placeholder="Location">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group full-width">
+                    <label>Description</label>
+                    <textarea class="event-description" placeholder="Details..." rows="2"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Preview Event Template -->
+<template id="preview-event-template">
+    <div class="preview-event" data-event-uid="">
+        <div class="preview-event-main">
+            <div class="preview-date">
+                <span class="preview-month"></span>
+                <span class="preview-day"></span>
+                <span class="preview-time"></span>
+            </div>
+            <div class="preview-details">
+                <div class="preview-title-row">
+                    <span class="preview-title"></span>
+                    <span class="preview-category"></span>
+                </div>
+                <div class="preview-location"></div>
+                <div class="preview-description"></div>
+            </div>
+        </div>
+        <div class="preview-actions">
+            <button type="button" class="edit-event-btn" title="Edit">✏️</button>
+            <button type="button" class="delete-event-btn" title="Delete">🗑️</button>
+        </div>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/create.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}CalShare - AI-Powered Calendar Sharing{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-badge">AI-Powered • Any Format • No Sign-up</div>
+        <h1 class="hero-title">
+            Upload Any Schedule,<br>
+            <span class="gradient-text">Share Instantly</span>
+        </h1>
+        <p class="hero-description">
+            Upload a photo of a schedule, PDF, spreadsheet, or any document. Our AI extracts 
+            all events and creates a shareable link that works with any calendar app.
+        </p>
+        <div class="hero-actions">
+            <a href="{{ url_for('create_calendar') }}" class="btn btn-primary btn-large">
+                Create Shareable Calendar →
+            </a>
+        </div>
+    </div>
+    
+    <div class="hero-visual">
+        <div class="format-showcase">
+            <div class="format-item">📷 Photos</div>
+            <div class="format-item">📄 PDFs</div>
+            <div class="format-item">📊 Excel</div>
+            <div class="format-item">📝 Text</div>
+            <div class="format-item">📅 ICS</div>
+            <div class="format-arrow">→</div>
+            <div class="format-result">
+                <div class="result-icon">🔗</div>
+                <span>One Link</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="features">
+    <h2 class="section-title">How It Works</h2>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">📤</div>
+            <h3>1. Upload Anything</h3>
+            <p>Photo of a practice schedule? PDF from school? Screenshot? Just upload it. Our AI reads and understands any format.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🤖</div>
+            <h3>2. AI Extracts Events</h3>
+            <p>Using advanced OCR and AI, we identify dates, times, locations, and event types — then let you review and edit.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🔗</div>
+            <h3>3. Share One Link</h3>
+            <p>Get a unique URL and QR code. Recipients add events to Google Calendar, Apple Calendar, Outlook, or download the file.</p>
+        </div>
+    </div>
+</section>
+
+<section class="formats">
+    <h2 class="section-title">Accepts Any Format</h2>
+    <div class="formats-grid">
+        <div class="format-group">
+            <h3>📷 Images</h3>
+            <p>PNG, JPG, screenshots, photos of printed schedules</p>
+        </div>
+        <div class="format-group">
+            <h3>📄 Documents</h3>
+            <p>PDF, Word docs, scanned documents</p>
+        </div>
+        <div class="format-group">
+            <h3>📊 Spreadsheets</h3>
+            <p>Excel, CSV, Google Sheets exports</p>
+        </div>
+        <div class="format-group">
+            <h3>📝 Text</h3>
+            <p>Plain text, copied schedules, emails</p>
+        </div>
+        <div class="format-group">
+            <h3>📅 Calendar Files</h3>
+            <p>ICS files from any calendar app</p>
+        </div>
+        <div class="format-group">
+            <h3>✏️ Manual Entry</h3>
+            <p>Type events directly in our form</p>
+        </div>
+    </div>
+</section>
+
+<section class="compatibility">
+    <h2 class="section-title">Works With All Calendars</h2>
+    <div class="calendar-logos">
+        <div class="calendar-logo">
+            <div class="logo-circle google">G</div>
+            <span>Google Calendar</span>
+        </div>
+        <div class="calendar-logo">
+            <div class="logo-circle apple">🍎</div>
+            <span>Apple Calendar</span>
+        </div>
+        <div class="calendar-logo">
+            <div class="logo-circle outlook">O</div>
+            <span>Outlook</span>
+        </div>
+        <div class="calendar-logo">
+            <div class="logo-circle other">+</div>
+            <span>Any ICS-compatible app</span>
+        </div>
+    </div>
+</section>
+
+<section class="cta">
+    <div class="cta-content">
+        <h2>Ready to Share Your Schedule?</h2>
+        <p>No account needed. Upload any format. Share in seconds.</p>
+        <a href="{{ url_for('create_calendar') }}" class="btn btn-primary btn-large">
+            Get Started Free →
+        </a>
+    </div>
+</section>
+{% endblock %}

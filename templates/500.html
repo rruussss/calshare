@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error{% endblock %}
+
+{% block content %}
+<section class="error-page">
+    <div class="error-content">
+        <div class="error-icon">⚠️</div>
+        <h1>500</h1>
+        <h2>Something Went Wrong</h2>
+        <p>We encountered an unexpected error. Please try again.</p>
+        <div class="error-actions">
+            <a href="{{ url_for('index') }}" class="btn btn-primary">Go Home</a>
+            <a href="{{ url_for('create_calendar') }}" class="btn btn-secondary">Try Again</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

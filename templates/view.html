@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}{{ calendar.name }}{% endblock %}
+
+{% block content %}
+<section class="view-page">
+    <div class="view-header">
+        <div class="calendar-info">
+            <h1>{{ calendar.name }}</h1>
+            {% if calendar.description %}
+            <p class="calendar-description">{{ calendar.description }}</p>
+            {% endif %}
+            <div class="calendar-meta">
+                <span class="event-count-badge">{{ events|length }} events</span>
+                <span class="view-count">{{ calendar.access_count }} views</span>
+            </div>
+        </div>
+        
+        <div class="share-panel">
+            <div class="qr-code">
+                <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code">
+            </div>
+            <div class="share-url-display">
+                <input type="text" value="{{ calendar_url }}" readonly id="share-url">
+                <button class="copy-btn" onclick="copyUrl()">Copy</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Device Detection Message -->
+    <div class="device-instructions">
+        {% if device_info.is_ios %}
+        <div class="instruction-banner ios">
+            <span class="device-icon">📱</span>
+            <div>
+                <strong>iPhone/iPad detected</strong>
+                <p>Tap "Download .ics" — it will open directly in your Calendar app.</p>
+            </div>
+        </div>
+        {% elif device_info.is_android %}
+        <div class="instruction-banner android">
+            <span class="device-icon">📱</span>
+            <div>
+                <strong>Android detected</strong>
+                <p>Use "Google Calendar" for the best experience, or download the .ics file.</p>
+            </div>
+        </div>
+        {% elif device_info.is_mac %}
+        <div class="instruction-banner mac">
+            <span class="device-icon">💻</span>
+            <div>
+                <strong>Mac detected</strong>
+                <p>Download the .ics file to add to Calendar, or use Google Calendar.</p>
+            </div>
+        </div>
+        {% elif device_info.is_windows %}
+        <div class="instruction-banner windows">
+            <span class="device-icon">💻</span>
+            <div>
+                <strong>Windows detected</strong>
+                <p>Download the .ics file to import into Outlook, or use Google Calendar.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Add to Calendar Options -->
+    <div class="add-calendar-section">
+        <h2>Add to Your Calendar</h2>
+        <div class="calendar-options">
+            <a href="{{ ics_url }}" class="calendar-option download" id="download-ics">
+                <div class="option-icon">📥</div>
+                <div class="option-info">
+                    <span class="option-name">Download .ics File</span>
+                    <span class="option-desc">Works with all calendar apps</span>
+                </div>
+            </a>
+            
+            <a href="https://calendar.google.com/calendar/r?cid={{ ics_url | urlencode }}" target="_blank" class="calendar-option google">
+                <div class="option-icon google-icon">G</div>
+                <div class="option-info">
+                    <span class="option-name">Google Calendar</span>
+                    <span class="option-desc">Subscribe to calendar</span>
+                </div>
+            </a>
+            
+            <a href="webcal://{{ ics_url.replace('http://', '').replace('https://', '') }}" class="calendar-option apple">
+                <div class="option-icon">🍎</div>
+                <div class="option-info">
+                    <span class="option-name">Apple Calendar</span>
+                    <span class="option-desc">Subscribe on iOS/Mac</span>
+                </div>
+            </a>
+            
+            <a href="https://outlook.live.com/calendar/0/addfromweb?url={{ ics_url | urlencode }}&name={{ calendar.name | urlencode }}" target="_blank" class="calendar-option outlook">
+                <div class="option-icon outlook-icon">O</div>
+                <div class="option-info">
+                    <span class="option-name">Outlook.com</span>
+                    <span class="option-desc">Add to Outlook online</span>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Category Filter -->
+    {% if categories|length > 1 %}
+    <div class="filter-section">
+        <h3>Filter by Category</h3>
+        <div class="category-filters">
+            <label class="category-chip active" data-category="all">
+                <input type="checkbox" checked> All ({{ events|length }})
+            </label>
+            {% for category in categories %}
+            <label class="category-chip" data-category="{{ category }}">
+                <input type="checkbox" value="{{ category }}"> 
+                {{ category|title }} ({{ events|selectattr('category', 'equalto', category)|list|length }})
+            </label>
+            {% endfor %}
+        </div>
+        <div class="filter-download" id="filter-download" style="display: none;">
+            <a href="#" id="download-filtered" class="btn btn-secondary btn-small">
+                Download Filtered Events
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Events List -->
+    <div class="events-section">
+        <h2>All Events</h2>
+        <div class="events-timeline" id="events-timeline">
+            {% for event in events %}
+            <div class="timeline-event" data-event-id="{{ event.id }}" data-category="{{ event.category }}">
+                <div class="event-date-col">
+                    {% set start_dt = event.start_time %}
+                    <div class="event-date-box">
+                        <span class="event-month">{{ start_dt[:7] }}</span>
+                        <span class="event-daynum">{{ start_dt[8:10] }}</span>
+                    </div>
+                </div>
+                <div class="event-content">
+                    <div class="event-header">
+                        <h3 class="event-title">{{ event.title }}</h3>
+                        <span class="event-category-tag {{ event.category }}">{{ event.category|title }}</span>
+                    </div>
+                    <div class="event-meta">
+                        {% if event.all_day %}
+                        <span class="event-time">All Day</span>
+                        {% else %}
+                        <span class="event-time">
+                            {{ event.start_time[11:16] }} - {{ event.end_time[11:16] }}
+                        </span>
+                        {% endif %}
+                        {% if event.location %}
+                        <span class="event-location">📍 {{ event.location }}</span>
+                        {% endif %}
+                    </div>
+                    {% if event.description %}
+                    <p class="event-description">{{ event.description }}</p>
+                    {% endif %}
+                </div>
+                <div class="event-actions">
+                    <a href="{{ url_for('google_calendar_link', slug=calendar.slug, event_id=event.id) }}" 
+                       class="add-single-btn" title="Add to Google Calendar" target="_blank">
+                        + Google
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<script>
+const icsBaseUrl = "{{ ics_url }}";
+
+function copyUrl() {
+    const urlInput = document.getElementById('share-url');
+    urlInput.select();
+    document.execCommand('copy');
+    
+    const copyBtn = document.querySelector('.copy-btn');
+    copyBtn.textContent = 'Copied!';
+    setTimeout(() => copyBtn.textContent = 'Copy', 2000);
+}
+
+// Category filtering
+document.querySelectorAll('.category-chip').forEach(chip => {
+    chip.addEventListener('click', function(e) {
+        e.preventDefault();
+        const category = this.dataset.category;
+        const isAll = category === 'all';
+        
+        if (isAll) {
+            document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            document.querySelectorAll('.timeline-event').forEach(e => e.style.display = 'flex');
+            document.getElementById('filter-download').style.display = 'none';
+        } else {
+            document.querySelector('[data-category="all"]').classList.remove('active');
+            this.classList.toggle('active');
+            
+            const selectedCategories = Array.from(document.querySelectorAll('.category-chip.active'))
+                .map(c => c.dataset.category)
+                .filter(c => c !== 'all');
+            
+            if (selectedCategories.length === 0) {
+                document.querySelector('[data-category="all"]').classList.add('active');
+                document.querySelectorAll('.timeline-event').forEach(e => e.style.display = 'flex');
+                document.getElementById('filter-download').style.display = 'none';
+            } else {
+                document.querySelectorAll('.timeline-event').forEach(event => {
+                    event.style.display = selectedCategories.includes(event.dataset.category) ? 'flex' : 'none';
+                });
+                
+                // Update download link
+                const params = selectedCategories.map(c => `category=${encodeURIComponent(c)}`).join('&');
+                document.getElementById('download-filtered').href = `${icsBaseUrl}?${params}`;
+                document.getElementById('filter-download').style.display = 'block';
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
