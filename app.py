@@ -44,6 +44,9 @@ app.config['UPLOAD_FOLDER'] = 'uploads'
 # Ensure upload folder exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+# Initialize database on app startup
+init_db()
+
 # Allowed file extensions - we accept almost anything
 ALLOWED_EXTENSIONS = {
     'ics', 'ical',  # Calendar files
