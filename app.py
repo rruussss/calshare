@@ -44,9 +44,6 @@ app.config['UPLOAD_FOLDER'] = 'uploads'
 # Ensure upload folder exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Initialize database on app startup
-init_db()
-
 # Allowed file extensions - we accept almost anything
 ALLOWED_EXTENSIONS = {
     'ics', 'ical',  # Calendar files
@@ -104,6 +101,9 @@ def init_db():
     
     conn.commit()
     conn.close()
+
+# Initialize database on app startup (after function definition)
+init_db()
 
 def allowed_file(filename):
     """Check if file extension is allowed"""
